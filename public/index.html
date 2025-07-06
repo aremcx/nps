@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMEDAN - NIPOST Discount Form</title>
-    <!-- Favicon: Using an emoji as a data URI for simplicity -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📬</text></svg>">
     <!-- Google Font: Inter for a modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +19,6 @@
             min-height: 100vh;
             box-sizing: border-box;
             color: #333; /* Default text color */
-            overflow-x: hidden; /* Prevent horizontal scroll on small screens */
         }
 
         /* Form Container Styling */
@@ -35,12 +32,6 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Deeper shadow */
             box-sizing: border-box;
             animation: fadeIn 0.8s ease-out; /* Fade-in animation */
-            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
-        }
-
-        .form-container:hover {
-            transform: translateY(-5px); /* Slight lift on hover */
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
         }
 
         /* Form Header */
@@ -53,29 +44,6 @@
             border-bottom: 3px solid #fcbf23; /* NIPOST gold accent */
             padding-bottom: 15px;
             letter-spacing: 0.5px;
-            position: relative; /* For pseudo-elements */
-        }
-
-        /* Subtle decorative elements for the header */
-        h2::before, h2::after {
-            content: '';
-            position: absolute;
-            bottom: -3px; /* Align with border-bottom */
-            height: 3px;
-            background-color: #fcbf23;
-            animation: expandLine 1.5s ease-out forwards;
-        }
-
-        h2::before {
-            left: 50%;
-            transform: translateX(-100%);
-            width: 0;
-        }
-
-        h2::after {
-            right: 50%;
-            transform: translateX(100%);
-            width: 0;
         }
 
         /* Info Text */
@@ -119,7 +87,6 @@
             outline: none;
             border-color: #007bff; /* Brighter blue on focus */
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Subtle glow on focus */
-            background-color: #f9fcff; /* Very light blue background on focus */
         }
 
         /* Radio Group Styling */
@@ -134,7 +101,6 @@
             margin-right: 8px;
             width: auto; /* Override 100% width */
             margin-bottom: 0; /* Remove bottom margin */
-            cursor: pointer;
         }
 
         .radio-group label {
@@ -159,14 +125,13 @@
             border-radius: 8px;
             margin-top: 30px;
             width: 100%;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
             box-shadow: 0 4px 10px rgba(0, 47, 108, 0.2); /* Button shadow */
         }
 
         button:hover {
             background-color: #004a99; /* Slightly lighter blue on hover */
             transform: translateY(-2px); /* Slight lift effect */
-            box-shadow: 0 6px 15px rgba(0, 47, 108, 0.3); /* Enhanced shadow on hover */
         }
 
         button:active {
@@ -184,6 +149,7 @@
         .action-buttons button {
             margin-top: 0; /* Override default button margin */
         }
+
 
         /* Footer Message */
         .footer-message {
@@ -203,14 +169,6 @@
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s ease;
-            opacity: 0; /* Hidden by default */
-            transform: translateY(10px); /* Slightly below */
-            animation: slideIn 0.5s forwards; /* Animation for appearance */
-        }
-
-        #responseMessage.show {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         /* Loader Styling */
@@ -223,12 +181,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .loader.visible {
-            opacity: 1;
         }
 
         .spinner {
@@ -252,16 +204,6 @@
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes expandLine {
-            from { width: 0; }
-            to { width: 40%; } /* Adjust width as needed */
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -567,6 +509,13 @@
             "Federal Capital Territory": ["Abaji", "Abuja Municipal", "Bwari", "Gwagwalada", "Kuje", "Kwali"]
         };
 
+        const officerData = {
+            "NIPOST-01": { /* You can add officer-specific details here if needed */ },
+            "NIPOST-02": { /* ... */ },
+            "NIPOST-03": { /* ... */ },
+            // Add more Officer IDs as needed
+        };
+
         // --- Element References ---
         const form = document.getElementById('smedanDiscountForm');
         // REMEMBER TO REPLACE THIS WITH YOUR ACTUAL DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
@@ -576,7 +525,7 @@
 
         const stateSelect = document.getElementById('state');
         const lgaSelect = document.getElementById('lga');
-        const officerIdInput = document.getElementById('officerId'); // Changed to input reference
+        const officerIdSelect = document.getElementById('officerId');
         const amountPurchasedInput = document.getElementById('amountPurchased');
         const discountAmountInput = document.getElementById('discountAmount');
         const finalAmountPaidInput = document.getElementById('finalAmountPaid');
@@ -619,6 +568,17 @@
             }
         }
 
+        function populateOfficerIds() {
+            officerIdSelect.innerHTML = '<option value="">Select Officer</option>'; // Clear existing options
+            const sortedOfficerIds = Object.keys(officerData).sort(); // Sort officer IDs
+            sortedOfficerIds.forEach(officerId => {
+                const option = document.createElement('option');
+                option.value = officerId;
+                option.textContent = officerId;
+                officerIdSelect.appendChild(option);
+            });
+        }
+
         // --- Discount Calculation Function ---
         function calculateDiscount() {
             const purchasedAmount = parseFloat(amountPurchasedInput.value) || 0;
@@ -632,21 +592,23 @@
         // --- Gemini API Integration: Generate Email Draft ---
         async function generateFollowUpEmail() {
             // Basic validation: Ensure essential fields are filled before generating email
-            if (!organizationNameInput.value || !amountPurchasedInput.value || !officerIdInput.value || !stateSelect.value || !lgaSelect.value || !postOfficeInput.value) {
-                displayMessage('Please fill in all required fields to generate an email.', 'orange');
+            if (!organizationNameInput.value || !amountPurchasedInput.value || !officerIdSelect.value || !stateSelect.value || !lgaSelect.value || !postOfficeInput.value) {
+                responseMessageDiv.textContent = 'Please fill in all required fields to generate an email.';
+                responseMessageDiv.style.color = 'orange';
+                responseMessageDiv.style.backgroundColor = '#fff3cd';
+                responseMessageDiv.style.borderColor = '#ffc107';
                 return;
             }
 
-            displayMessage('Generating email...', 'blue');
+            responseMessageDiv.textContent = ''; // Clear previous messages
             loaderDiv.classList.remove('hidden'); // Show loader
-            loaderDiv.classList.add('visible'); // Add visible class for transition
 
             const orgName = organizationNameInput.value;
             const amountPurchased = parseFloat(amountPurchasedInput.value).toFixed(2);
             const discountAmount = parseFloat(discountAmountInput.value).toFixed(2);
             const finalAmountPaid = parseFloat(finalAmountPaidInput.value).toFixed(2);
             const dateOfTransaction = dateOfTransactionInput.value;
-            const officerId = officerIdInput.value; // Get value from text input
+            const officerId = officerIdSelect.value;
             const state = stateSelect.value;
             const lga = lgaSelect.value;
             const postOffice = postOfficeInput.value;
@@ -678,7 +640,6 @@ The email should thank them for their patronage, confirm the transaction details
 
                 const result = await response.json();
                 loaderDiv.classList.add('hidden'); // Hide loader
-                loaderDiv.classList.remove('visible'); // Remove visible class
 
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
@@ -686,15 +647,19 @@ The email should thank them for their patronage, confirm the transaction details
                     const generatedText = result.candidates[0].content.parts[0].text;
                     emailDraftContent.textContent = generatedText;
                     emailModalOverlay.classList.add('visible'); // Show the modal
-                    displayMessage('Email draft generated successfully!', 'green');
                 } else {
-                    displayMessage('Failed to generate email: No content received from AI.', 'red');
+                    responseMessageDiv.textContent = 'Failed to generate email: No content received from AI.';
+                    responseMessageDiv.style.color = 'red';
+                    responseMessageDiv.style.backgroundColor = '#f8d7da';
+                    responseMessageDiv.style.borderColor = '#dc3545';
                     console.error('AI Response Error:', result);
                 }
             } catch (error) {
                 loaderDiv.classList.add('hidden'); // Hide loader
-                loaderDiv.classList.remove('visible'); // Remove visible class
-                displayMessage('An error occurred while contacting the AI. Please try again.', 'red');
+                responseMessageDiv.textContent = 'An error occurred while contacting the AI. Please try again.';
+                responseMessageDiv.style.color = 'red';
+                responseMessageDiv.style.backgroundColor = '#f8d7da';
+                responseMessageDiv.style.borderColor = '#dc3545';
                 console.error('Gemini API Fetch Error:', error);
             }
         }
@@ -722,34 +687,6 @@ The email should thank them for their patronage, confirm the transaction details
             }
         }
 
-        // --- Display Message Function (for form feedback) ---
-        function displayMessage(message, type) {
-            responseMessageDiv.textContent = message;
-            responseMessageDiv.classList.add('show'); // Add show class for animation
-            if (type === 'green') {
-                responseMessageDiv.style.color = 'green';
-                responseMessageDiv.style.backgroundColor = '#d4edda';
-                responseMessageDiv.style.borderColor = '#28a745';
-            } else if (type === 'red') {
-                responseMessageDiv.style.color = 'red';
-                responseMessageDiv.style.backgroundColor = '#f8d7da';
-                responseMessageDiv.style.borderColor = '#dc3545';
-            } else if (type === 'blue') {
-                responseMessageDiv.style.color = '#0056b3';
-                responseMessageDiv.style.backgroundColor = '#e0f2ff';
-                responseMessageDiv.style.borderColor = '#007bff';
-            } else if (type === 'orange') {
-                responseMessageDiv.style.color = '#856404';
-                responseMessageDiv.style.backgroundColor = '#fff3cd';
-                responseMessageDiv.style.borderColor = '#ffeeba';
-            }
-            // Hide message after a few seconds
-            setTimeout(() => {
-                responseMessageDiv.classList.remove('show');
-                responseMessageDiv.textContent = '';
-            }, 5000);
-        }
-
         // --- Event Listeners and Initial Setup ---
         document.addEventListener('DOMContentLoaded', () => {
             // Set today's date as default for Date of Transaction
@@ -760,7 +697,7 @@ The email should thank them for their patronage, confirm the transaction details
             dateOfTransactionInput.value = `${year}-${month}-${day}`;
 
             populateStates();
-            populateLgas(); // Populate LGA based on initial state value if any
+            populateOfficerIds();
             calculateDiscount(); // Perform initial calculation if there's a default amount
         });
 
@@ -780,13 +717,12 @@ The email should thank them for their patronage, confirm the transaction details
         copyEmailBtn.addEventListener('click', copyEmailToClipboard);
 
 
-        // --- Form Submission Logic ---
+        // --- Form Submission Logic (unchanged from previous version) ---
         form.addEventListener('submit', e => {
             e.preventDefault(); // Prevent the default form submission (page reload)
 
-            displayMessage('Submitting form...', 'blue');
+            responseMessageDiv.textContent = ''; // Clear previous messages
             loaderDiv.classList.remove('hidden'); // Show loader
-            loaderDiv.classList.add('visible'); // Add visible class for transition
 
             // Create a FormData object from the form
             // It automatically picks up all fields with 'name' attributes
@@ -814,24 +750,33 @@ The email should thank them for their patronage, confirm the transaction details
             })
             .then(data => {
                 loaderDiv.classList.add('hidden'); // Hide loader
-                loaderDiv.classList.remove('visible'); // Remove visible class
                 if (data.result === 'success') {
-                    displayMessage('Form submitted successfully!', 'green');
+                    responseMessageDiv.textContent = 'Form submitted successfully!';
+                    responseMessageDiv.style.color = 'green';
+                    responseMessageDiv.style.backgroundColor = '#d4edda'; /* Light green background */
+                    responseMessageDiv.style.borderColor = '#28a745'; /* Green border */
+
                     form.reset(); // Clear the form after successful submission
                     // Re-populate initial dropdowns and recalculate after reset
                     populateStates();
+                    populateOfficerIds();
                     populateLgas(); // Reset LGA dropdown
                     calculateDiscount(); // Reset calculated fields
                     dateOfTransactionInput.value = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`; // Reset date
                 } else {
-                    displayMessage('Error submitting form: ' + (data.error || data.message || 'Unknown error'), 'red');
+                    responseMessageDiv.textContent = 'Error submitting form: ' + (data.error || data.message || 'Unknown error');
+                    responseMessageDiv.style.color = 'red';
+                    responseMessageDiv.style.backgroundColor = '#f8d7da'; /* Light red background */
+                    responseMessageDiv.style.borderColor = '#dc3545'; /* Red border */
                     console.error('Apps Script Error:', data.error || data.message || data.raw);
                 }
             })
             .catch(error => {
                 loaderDiv.classList.add('hidden'); // Hide loader
-                loaderDiv.classList.remove('visible'); // Remove visible class
-                displayMessage('An error occurred during submission. Please check your browser console.', 'red');
+                responseMessageDiv.textContent = 'An error occurred during submission. Please check your browser console.';
+                responseMessageDiv.style.color = 'red';
+                responseMessageDiv.style.backgroundColor = '#f8d7da';
+                responseMessageDiv.style.borderColor = '#dc3545';
                 console.error('Fetch Error:', error);
             });
         });
