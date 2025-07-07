@@ -666,8 +666,8 @@ The email should thank them for their patronage, confirm the transaction details
             let chatHistory = [];
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             const payload = { contents: chatHistory };
-            const apiKey = ""; // Canvas will automatically provide this in runtime
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AIzaSyCgaUiXqEo189x1ICo8hK33wJb-oebV93A}`;
+            const apiKey = "AIzaSyCgaUiXqEo189x1ICo8hK33wJb-oebV93A"; // Canvas will automatically provide this in runtime
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
                 const response = await fetch(apiUrl, {
